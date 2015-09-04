@@ -463,6 +463,7 @@ function computerTurn() {
 		move = move.filter(function(dig) {
 			return board[dig] == ' ';
 		});
+		move = randFromList(move);
 	};
 	if (turns == 1 && board[4] == ' ') {
 		move = 4;
@@ -471,6 +472,18 @@ function computerTurn() {
 	if (turns == 3 && ( trimStr(slices(board)[1][6]).length == 3 || trimStr(slices(board)[1][7]).length == 3) ) {
 		move = [1,3,5,7].filter(function(dig) {
 			return board[dig] == ' ';
+		});
+		move = randFromList(move);
+	};
+
+	if (turns == 3) {
+		move = [0,1,2,3,4,5,6,7,8].filter(function(dig) {
+			return board[dig] == ' ';
+		});
+		move = move.filter(function(dig) {
+			temp = board.slice();
+			temp[dig] = 'x';
+			return recur(temp, 'o', true) === false;
 		});
 		move = randFromList(move);
 	};
@@ -492,7 +505,7 @@ function computerTurn() {
 	};
 
 	if (!move && move !== 0) {
-		move = [0,1,2,3,4,5,6,7].filter(function(dig) {
+		move = [0,1,2,3,4,5,6,7,8].filter(function(dig) {
 			return board[dig] == ' ';
 		});
 		move = randFromList(move);
