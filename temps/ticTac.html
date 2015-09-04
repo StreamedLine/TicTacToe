@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>TicTacToe 3.0</title>
+</head>
+<body>
+
+<script>
+	
+var board = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
+var turns = 0;
+var humansTurn = false;
+
+//= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+//READING THE BOARD
+
+var slices = function slices(boardCopy) {
+	boardCopy = boardCopy ? boardCopy : board;
+	return [
+			[ //easier to write to the board when data is represented this way
+			[ boardCopy[0], boardCopy[1], boardCopy[2] ],
+			[ boardCopy[3], boardCopy[4], boardCopy[5] ],
+			[ boardCopy[6], boardCopy[7], boardCopy[8] ],
+			
+			[ boardCopy[0], boardCopy[3], boardCopy[6] ],
+			[ boardCopy[1], boardCopy[4], boardCopy[7] ],
+			[ boardCopy[2], boardCopy[5], boardCopy[8] ],
+			
+			[ boardCopy[0], boardCopy[4], boardCopy[8] ],
+			[ boardCopy[6], boardCopy[4], boardCopy[2] ]	
+			],
+			[ //easier to read the data this way
+			boardCopy[0] + boardCopy[1] + boardCopy[2],
+			boardCopy[3] + boardCopy[4] + boardCopy[5],
+			boardCopy[6] + boardCopy[7] + boardCopy[8],
+	
+			boardCopy[0] + boardCopy[3] + boardCopy[6],
+			boardCopy[1] + boardCopy[4] + boardCopy[7],
+			boardCopy[2] + boardCopy[5] + boardCopy[8],
+			
+			boardCopy[0] + boardCopy[4] + boardCopy[8],
+			boardCopy[6] + boardCopy[4] + boardCopy[2]
+			],
+			[
+			[ 0, 1, 2 ],
+			[ 3, 4, 5 ],
+			[ 6, 7, 8 ],
+			
+			[ 0, 3, 6 ],
+			[ 1, 4, 7 ],
+			[ 2, 5, 8 ],
+			
+			[ 0, 4, 8 ],
+			[ 6, 4, 2 ]				
+			]
+	];
+};
+
+function boardSituation(s, boardCopy) {
+	boardCopy = boardCopy ? boardCopy : board;
+	return (function() {
+			var	oneToWin = (function(){
+					var i = 0;
+					slices(boardCopy)[1].forEach(function(line) {
+						if (trimStr(line) == s + s) {i++ };
+						// console.log('Seeing: ' + "'" + trimStr(line) + "'");
+					});
+					return i;
+				})(),
+
+				oneToLose = (function(){
+					var nots = notS(s);
+					var i = 0;
+					slices(boardCopy)[1].forEach(function(line) {
+						if (trimStr(line) == nots + nots) {i++ };
+					});
+					return i;
+				})(),
+				wins = (function(){
+					var i = 0;
+					slices(boardCopy)[1].forEach(function(line) {
+						if (line == s + s + s) {i++ };
+						// console.log('seeing ' + line)
+					});
+					return i;
+				})(),
+				singles = (function(){
+					var i = 0;
+					slices(boardCopy)[1].forEach(function(line){
+						if (trimStr(line) == s) {i++ };
+					});
+					return i;
+				})(),
+				traps = (function(){
+					var winP = oneToLose;
+					if (winP > 1) {
+						return winP - 1;
+					} else {
+						return 0;
+					}
+				})();
+
+			return {
+				oneToWin: oneToWin,
+				oneToLose: oneToLose,
+				wins: wins,
+				singles: singles,
+				traps: traps
+			}
+		})()
+}
+//= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+
+//WRITING TO THE BOARD
+
+//takes an x,y and writes s to the board
+function edit(i, s) {	
+	//if spot is taken:
+	if (board[i] !== ' ') {
+		console.log('Spot taken');
+		return false;
+	};
+	//if spot is clear
+	board[i] = s;
+	turns++;
+	return true
+}
+
+function editXY(x, y, s) {
+	var boardLoc = twoDto1D(x,y);
+	return edit(boardLoc, s);
+}
+
+//= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+//MANIPULATING POSITIONS
+
+//converts x,y locations on grid to 1 dimensional index from 0-8
+function twoDto1D(x, y) {
+	x = x % 3;
+	y = y * 3;
+	return x + y;
+}
+
+
+//converts from slices[1] to slices[0]
+function oneDto2D(loc) {
+	var x, y, twoDSlices = [slices()[2][0], slices()[2][1], slices()[2][2] ];
+	twoDSlices.forEach(function(each, i){
+		if (each.indexOf(loc) !== -1) {
+			x = each.indexOf(loc);
+			y = i;
+		};
+	});
+	return [x, y];
+}
+
+
+function create2inRow(boardCopy, s) {
+	var situationCopy = boardSituation(s, boardCopy);
+	var results = [];
+
+	boardCopy.forEach(function(each, i) {
+		if (each == ' ') {
+			boardCopy[i] = s;
+			if (boardSituation(s, boardCopy).oneToWin > situationCopy.wins) {
+				results.push(i);
+			};
+		};
+		boardCopy[i] = ' ';
+	});
+	return results;
+}
+
+function block2inRow(boardCopy, s) {
+	//find singles
+	var situationCopy = boardSituation(s, boardCopy);
+
+	//put there index in results
+	//return results
+}
+//= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+//MANIPULATING STRINGS
+
+//removes whitespace from string
+function trimStr(str) {
+	var len = str.length, newStr=  '';
+
+	str = str.split('');
+	for (var i = 0; i < len; i++) {
+		if (str[i] !== ' ') {newStr += str[i] };
+	}
+	return newStr;
+}
+
+//reverse symbol
+function notS(s) {
+	if (s == 'x') {return 'o'};
+	if (s == 'o') {return 'x'};
+}
+
+//= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+//SEARCH FUNCTIONS
+
+//searches for string in array while striiping array of whitespace
+function simpleSearch(str, arr) {
+	var arrLocs = [];
+	arr.forEach(function(each, i) {
+		if (trimStr(each) == str) {arrLocs.push(i) };
+	});
+	return arrLocs;
+}
+
+//= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+
+
+function humanTurn(i) {
+	console.log('turn #' + turns);
+	if (edit(i, 'o') == false) {return console.log('Is that spot taken?') };
+
+	humansTurn = false;
+	// activate computer
+	computerTurn();
+}
+
+function computerTurn() {
+	var boardCopy = slices()[1], tempBoard = board.slice();
+	var situation = boardSituation('x');
+	var actions = ['win', 'block', 'corner', 'middle', 'trap', 'force', 'blockTrap', 'random']; //possible moves
+	var action = actions[actions.length-1];//'random'
+	var x, y, xy, index, inner, temp, blacklist = [], moves = [];
+
+	console.log('turn #' + turns);
+
+	//WHICH ACTION
+	// if computer can win than it should win
+	if (situation.oneToWin > 0) {
+		console.log('situation.oneToWin: ' + situation.oneToWin);
+		action = actions[0];//'win'
+	};
+	// if it needs to block a direct win it should
+	if (action !== 'win' && situation.oneToLose > 0) {
+		console.log('situation.oneToLose ' + situation.oneToLose);
+		action = actions[1];
+	};
+
+	//WHAT THE ACTIONS MEAN
+	if (action == 'win') {
+		tempBoard.forEach(function(each, i){
+			if (each == ' ') {
+				tempBoard[i] = 'x';
+				if (boardSituation('x', tempBoard).wins > 0) {
+					moves.unshift(i);
+				};
+			};
+			tempBoard = board.slice();
+		});
+	};
+	if (action == 'block') {
+		tempBoard.forEach(function(each, i){
+			if (each == ' ') {
+				tempBoard[i] = 'x';
+				if (boardSituation('o', tempBoard).wins < situation.oneToLose) {
+					moves.unshift(i);
+				};
+			};
+			tempBoard = board.slice();
+		});
+	};
+	if (action == 'random') {//check for traps
+		tempBoard = board.slice();
+		tempBoard.forEach(function(each, i){
+			if (each == ' ') {
+				tempBoard[i] = 'x';
+				if (boardSituation('o', tempBoard).traps > 0) {
+					moves.unshift(i);
+					action = actions[4];
+				};
+			};
+			tempBoard = board.slice();
+		});
+	};
+	//Finally- we need to check the random spot for potentially allowing traps the next turn
+	if (action == 'random') {
+		tempBoard = board.slice();
+		index = create2inRow(tempBoard, 'x');
+		index.forEach(function(each, i) {
+			if (tempBoard[i] == ' ') {
+				tempBoard[i] == 'x';
+				tempBoard[ block2inRow(tempBoard, 'o') ] = 'o';  
+				temp = tempBoard.slice();
+				temp.forEach(function(inn, j){
+					if (inn == ' ') {
+						temp[j] = 'o'
+						if (boardSituation(temp, 'o').oneToWin > 1) {
+							blacklist.push(i);
+						};
+					}
+					temp = tempBoard.slice();
+				});
+			};
+			tempBoard[i] = ' ';
+		});
+	};
+	
+	if (turns == 1 && board[4] == ' ') {//'middle'
+		action = actions[3]
+		moves.unshift(4);
+	};
+
+
+	if (moves.length == 0 && board.indexOf(' ') !== -1) {
+		moves.push(rand(8));
+		if (turns = 8) {
+			while (board[moves[0]] !== ' ') {
+				moves[0] = rand(8); 
+			}
+		} else {
+			moves.forEach(function(each, i){
+				if (blacklist.indexOf(moves[i]) == -1) {
+					moves[0] = moves[i];
+				};
+			});
+			
+		}
+	};
+
+	console.log(moves[0]);
+	edit(moves[0], 'x');
+	printB();
+	humansTurn = true;
+}//END
+//end of computerTurn()
+
+
+function resetGame() {
+	board = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
+	turns = 0;
+	humansTurn = false;
+}
+
+function rand(limit) {
+ 	return Math.floor(Math.random() * (limit + 1))
+}
+
+function randFromList(list) {
+	return list[ Math.floor(Math.random() * (list.length)) ]
+}
+
+function printB() {
+	var line = '', boardCopy = slices()[0];
+	console.log(' -  -  -  -  -  -  -  -  ');
+	[0,1,2].forEach(function(i) {
+		[0,1,2].forEach(function(e) {
+			line += '  [' + boardCopy[i][e] + ']  ';
+		});
+		console.log(' ');
+		console.log(line);
+		line = '';
+	});
+	console.log(' ');
+	console.log(' -  -  -  -  -  -  -  -  ');
+}
+</script>
+
+
+</body>
+</html>
+
+
+
+
+
+
