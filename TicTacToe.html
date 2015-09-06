@@ -466,7 +466,7 @@ function computerTurn() {
 		board.forEach(function(spot, i) {
 			temp = board.slice();
 			if (temp[i] == ' ') {temp[i] = 'x'};
-			if (boardSituation('x', temp).oneToWin < boardSituation('x', board.slice()).oneToWin) {move = i}
+			if (boardSituation('x', temp).wins > 0) {move = i}
 		});
 	};
 
