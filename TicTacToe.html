@@ -75,17 +75,17 @@
 
 <div class="container">
 	<ul id="board">
-		<li id="one"  class="li"></li>
-		<li id="two"  class="li"></li>
-		<li id="three"class="li"></li>
+		<li class="li"></li>
+		<li class="li"></li>
+		<li class="li"></li>
 
-		<li id="four" class="li"></li>
-		<li id="five" class="li"></li>
-		<li id="six"  class="li"></li>
+		<li class="li"></li>
+		<li class="li"></li>
+		<li class="li"></li>
 
-		<li id="seven"class="li"></li>
-		<li id="eight"class="li"></li>
-		<li id="nine" class="li"></li>
+		<li class="li"></li>
+		<li class="li"></li>
+		<li class="li"></li>
 	</ul>
 </div>
 
@@ -102,9 +102,7 @@
 /////---   DOM   ---/////
 
 //GLOBAL DOM VARIABLES
-var testBtn = document.getElementById('button');
-var boxes = document.getElementById('board');
-var boxKids = boxes.getElementsByTagName('li');
+var newGameBtn = document.getElementById('button');
 var talkBox = document.getElementById('talkBox');
 var checkBox = document.getElementById('checkBox');
 var li = document.getElementsByClassName('li');
@@ -135,7 +133,7 @@ function disableBoard() {
 	});
 }
 
-testBtn.onclick = function() {
+newGameBtn.onclick = function() {
 	resetGame();
 	talkBox.innerText = '';
 	this.innerHTML = 'Restart'
@@ -150,7 +148,7 @@ testBtn.onclick = function() {
 
 var board = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
 var turns = 0;
-var huminoidTurn = false;
+var huminoidTurn = false; //doesn't do anything yet. perhaps in the future.
 
 var slices = function slices(boardCopy) {
 	boardCopy = boardCopy ? boardCopy : board;
@@ -220,29 +218,12 @@ function boardSituation(s, boardCopy) {
 						// console.log('seeing ' + line)
 					});
 					return i;
-				})(),
-				singles = (function(){
-					var i = 0;
-					slices(boardCopy)[1].forEach(function(line){
-						if (trimStr(line) == s) {i++ };
-					});
-					return i;
-				})(),
-				traps = (function(){
-					var winP = oneToLose;
-					if (winP > 1) {
-						return winP - 1;
-					} else {
-						return 0;
-					}
 				})();
 
 			return {
 				oneToWin: oneToWin,
 				oneToLose: oneToLose,
-				wins: wins,
-				singles: singles,
-				traps: traps
+				wins: wins
 			}
 		})()
 }
@@ -250,7 +231,7 @@ function boardSituation(s, boardCopy) {
 function recur(boardCopy, s, plyr1or2) {
 	var singles = [0, 1, 2, 3, 4, 5, 6, 7];
 	var singleLines = [], temp;
-	var index = false, x, y;
+	var index = false;
 
 
 	printB(boardCopy);
@@ -322,19 +303,6 @@ function lineProfile(boardCopy, i, s) {
 			   				if (i > 2 && i < 6) {return 1 }; // 1 == vertical
 			   				if (i > 5) {return 2 }; // 2 == diagonal
 			   			 })(),
-		         lrUdXY =(function() {
-		         			var digs = slices(boardCopy)[2][i]; //digitized line
-		         			var horizAligned = slices(boardCopy)[2]; //digitized horizontaly aligned board is the first 3 arrays of slices(boardCopy)[2]
-		         			var results = [[], [], []]; //[[x,y], [x,y], [x,y]]
-		         			digs.forEach(function(dig, id) { //takes each digit in the line searches a horizontily aligned index for it. thus retreaving the x and y values
-		         				[0,1,2].forEach(function(digY) {
-		         					if (horizAligned[digY].indexOf(dig) !== -1) {
-		         						results[id].push(horizAligned[digY].indexOf(dig)); //stores the x
-		         						results[id].push(digY); //stores the y
-		         					};
-		         				});
-		         			});
-		         		 })(),
 		      lrUdInner =(function lrUdInner() {
 		         			var locs = slices(boardCopy)[1][i];
 		         			return [locs[0], locs[1], locs[2] ];
@@ -358,22 +326,17 @@ function lineProfile(boardCopy, i, s) {
 		       				} else {
 		       					return [false, -1];
 		       				}
-		       			 })(),		
-		     interCross =(function interCross() { //DEVELOPEMENT
-		     				var locs = slices(boardCopy[2]);
-		     			 })(); 
+		       			 })(); 
     //var end.
 
 	return {
 		trimmedStr: trimmedStr, //line in the form of a trimmed(no whitespace) string
 		arr: arr, //full line in array format
 		lineType: lineType, //0, 1 or 2; (horizontal, vertical or diagonal)
-		lrUdXY: lrUdXY, //[ [], [], [] ] left to right or up to down
 		lrUdInner: lrUdInner, //diagonals are left to right only vertical are up-down. returns the values (x,o,' ') of each space.
 		digitized: digitized, //digit associated with location
 		oneEmpty: oneEmpty, //true or false and where is the empty one on the line
-		oneFull: oneFull, //true or false and where is the full one
-		interCross: [, , , , ] // indexes //DEVELOPEMENT
+		oneFull: oneFull //true or false and where is the full one
 	}
 }//end
 
@@ -421,6 +384,7 @@ function edit(i, s) {
 		return false;
 	};
 	//if spot is clear
+	talkBox.innerText = '';
 	board[i] = s;
 	turns++;
 	printB();
@@ -430,8 +394,15 @@ function edit(i, s) {
 
 
 function humanTurn(i) {
+	var talks = ["Hey.. cheater!", "I'm sorry. That spot is taken.", "Sorry, no more room in this spot..", "stop it tickels.."];
 	console.log('turn #' + turns);
-	if (board[i] !== ' ') {return console.log('Is that spot taken?') };
+
+	if (gameOver() !== false) {return };
+	if (board[i] !== ' ') {
+		console.log('Is that spot taken?');
+		talkBox.innerText = randFromList(talks);
+		return 
+	};
 
 	edit(i, 'o');
 
@@ -441,20 +412,20 @@ function humanTurn(i) {
 }
 
 function computerTurn() {
-	var move, x, y, temp;
+	var move, temp;
 
 	if (gameOver() !== false) {return };
 
-	if (turns == 0) {
-		move = randFromList([0,2,6,8])
+	if (turns == 0) { //If first turn 
+		move = randFromList([0,2,6,8]) //go in the corner
 	}
 
-	if (turns > 1) {
+	if (turns > 1) { //if past the second turn- use recursive function to determine best move
 		temp = recur(board.slice(), 'x', true);
 		if (temp || temp == 0) {move = temp };
 	};
 
-	if (turns == 1 && board[4] !== ' ') {
+	if (turns == 1 && board[4] !== ' ') { //if second turn and middle is not empty 
 		temp = slices(board)[1].forEach(function(str, i) {
 			if (lineProfile(board, i, 'x').trimmedStr.length > 0) {
 				move = lineProfile(board, i, 'x').digitized;
@@ -465,18 +436,12 @@ function computerTurn() {
 		});
 		move = randFromList(move);
 	};
-	if (turns == 1 && board[4] == ' ') {
-		move = 4;
+
+	if (turns == 1 && board[4] == ' ') { //if second turn and middle is empty 
+		move = 4; // go in middle
 	};
 
-	if (turns == 3 && ( trimStr(slices(board)[1][6]).length == 3 || trimStr(slices(board)[1][7]).length == 3) ) {
-		move = [1,3,5,7].filter(function(dig) {
-			return board[dig] == ' ';
-		});
-		move = randFromList(move);
-	};
-
-	if (turns == 3) {
+	if (turns == 3) { //if it's the 4th turn use recursive function backwards to determine the best move
 		move = [0,1,2,3,4,5,6,7,8].filter(function(dig) {
 			return board[dig] == ' ';
 		});
@@ -488,7 +453,7 @@ function computerTurn() {
 		move = randFromList(move);
 	};
 
-	if (boardSituation('x', board.slice()).oneToLose > 0) {
+	if (boardSituation('x', board.slice()).oneToLose > 0) { //if you need to block- block
 		board.forEach(function(spot, i) {
 			temp = board.slice();
 			if (temp[i] == ' ') {temp[i] = 'x'};
@@ -496,7 +461,7 @@ function computerTurn() {
 		});
 		talkBox.innerText = 'Nice try..';
 	};
-	if (boardSituation('x', board.slice()).oneToWin > 0) {
+	if (boardSituation('x', board.slice()).oneToWin > 0) { //if you can win- win
 		board.forEach(function(spot, i) {
 			temp = board.slice();
 			if (temp[i] == ' ') {temp[i] = 'x'};
@@ -504,7 +469,7 @@ function computerTurn() {
 		});
 	};
 
-	if (!move && move !== 0) {
+	if (!move && move !== 0) { //if all else fails go somewhere random
 		move = [0,1,2,3,4,5,6,7,8].filter(function(dig) {
 			return board[dig] == ' ';
 		});
@@ -526,7 +491,7 @@ function gameOver() {
 		talkBox.innerText = 'I win!!';
 		return console.log('X wins!'); 
 	} else if (boardSituation('o', board).wins > 0) {
-		talkBox.innerText = 'Wow.. You did <it!></it!>'
+		talkBox.innerText = 'Wow.. You did it!'
 		return console.log('O wins!')
 	}
 	if (board.indexOf(' ') == -1) {return console.log('Game Over.')};
