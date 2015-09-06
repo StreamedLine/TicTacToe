@@ -228,6 +228,57 @@ function boardSituation(s, boardCopy) {
 		})()
 }
 
+
+function lineProfile(boardCopy, i, s) {
+	//===-->
+	var	     trimmedStr = trimStr(slices(boardCopy)[1][i]),
+		            arr = slices(boardCopy)[0][i],
+			   lineType =(function() {
+			   				if (i < 3) {return 0 }; // 0 == horizontal
+			   				if (i > 2 && i < 6) {return 1 }; // 1 == vertical
+			   				if (i > 5) {return 2 }; // 2 == diagonal
+			   			 })(),
+		      lrUdInner =(function lrUdInner() {
+		         			var locs = slices(boardCopy)[1][i];
+		         			return [locs[0], locs[1], locs[2] ];
+		         		 })(),
+		      digitized =(function digitized() {
+		         			var locs = slices(boardCopy)[2][i];
+		         			return [locs[0], locs[1], locs[2] ];
+		         		 })(),
+		       oneEmpty =(function oneEmpty() { //[true/false, digit]							       
+		       				var line = slices(boardCopy)[0][i];	   //2 of the same symbol  &&  1 empty space
+		       				if (line.filter(function(each){return each == s}).length == 2 && line.filter(function(each){return each == ' '}).length == 1) {
+		       					return [true, line.indexOf(' ')];
+		       				} else {
+		       					return [false, -1];
+		       				}
+		       			 })(),
+		       	oneFull =(function oneFull() { //[true/false, digit]							       
+		       				var line = slices(boardCopy)[0][i];		     //1 of thesymbol  &&  2 empty spaces
+		       				if (line.filter(function(each){return each == s}).length == 1 && line.filter(function(each){return each == ' '}).length == 2) {
+		       					return [true, line.indexOf(s)];
+		       				} else {
+		       					return [false, -1];
+		       				}
+		       			 })(); 
+    //var end.
+
+	return {
+		trimmedStr: trimmedStr, //line in the form of a trimmed(no whitespace) string
+		arr: arr, //full line in array format
+		lineType: lineType, //0, 1 or 2; (horizontal, vertical or diagonal)
+		lrUdInner: lrUdInner, //diagonals are left to right only vertical are up-down. returns the values (x,o,' ') of each space.
+		digitized: digitized, //digit associated with location
+		oneEmpty: oneEmpty, //true or false and where is the empty one on the line
+		oneFull: oneFull //true or false and where is the full one
+	}
+}//end
+
+
+//= = = == = = == = = == = = == = = == = = == = = == = = =
+
+//looks a few step ahead to determine best move
 function recur(boardCopy, s, plyr1or2) {
 	var singles = [0, 1, 2, 3, 4, 5, 6, 7];
 	var singleLines = [], temp;
@@ -291,56 +342,6 @@ function recur(boardCopy, s, plyr1or2) {
 
 	//return the position
 }
-//= = = == = = == = = == = = == = = == = = == = = == = = =
-
-
-function lineProfile(boardCopy, i, s) {
-	//===-->
-	var	     trimmedStr = trimStr(slices(boardCopy)[1][i]),
-		            arr = slices(boardCopy)[0][i],
-			   lineType =(function() {
-			   				if (i < 3) {return 0 }; // 0 == horizontal
-			   				if (i > 2 && i < 6) {return 1 }; // 1 == vertical
-			   				if (i > 5) {return 2 }; // 2 == diagonal
-			   			 })(),
-		      lrUdInner =(function lrUdInner() {
-		         			var locs = slices(boardCopy)[1][i];
-		         			return [locs[0], locs[1], locs[2] ];
-		         		 })(),
-		      digitized =(function digitized() {
-		         			var locs = slices(boardCopy)[2][i];
-		         			return [locs[0], locs[1], locs[2] ];
-		         		 })(),
-		       oneEmpty =(function oneEmpty() { //[true/false, digit]							       
-		       				var line = slices(boardCopy)[0][i];	   //2 of the same symbol  &&  1 empty space
-		       				if (line.filter(function(each){return each == s}).length == 2 && line.filter(function(each){return each == ' '}).length == 1) {
-		       					return [true, line.indexOf(' ')];
-		       				} else {
-		       					return [false, -1];
-		       				}
-		       			 })(),
-		       	oneFull =(function oneFull() { //[true/false, digit]							       
-		       				var line = slices(boardCopy)[0][i];		     //1 of thesymbol  &&  2 empty spaces
-		       				if (line.filter(function(each){return each == s}).length == 1 && line.filter(function(each){return each == ' '}).length == 2) {
-		       					return [true, line.indexOf(s)];
-		       				} else {
-		       					return [false, -1];
-		       				}
-		       			 })(); 
-    //var end.
-
-	return {
-		trimmedStr: trimmedStr, //line in the form of a trimmed(no whitespace) string
-		arr: arr, //full line in array format
-		lineType: lineType, //0, 1 or 2; (horizontal, vertical or diagonal)
-		lrUdInner: lrUdInner, //diagonals are left to right only vertical are up-down. returns the values (x,o,' ') of each space.
-		digitized: digitized, //digit associated with location
-		oneEmpty: oneEmpty, //true or false and where is the empty one on the line
-		oneFull: oneFull //true or false and where is the full one
-	}
-}//end
-
-
 
 //===============================================================
 
